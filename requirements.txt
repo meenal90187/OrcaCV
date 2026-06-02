@@ -1,7 +1,8 @@
-streamlit>=1.20.0
+streamlit
 torch
 torchvision
 pillow
 scipy
 numpy
 gdown
+opencv-python
