@@ -46,8 +46,23 @@ if uploaded_file is not None:
         output = model(input_tensor)
     
     # Post-processing: Pure Model Output + Soft Color Balancing
+    # 3. Post-processing Pipeline
     output_cpu = torch.clamp(output.cpu(), 0, 1).squeeze(0).permute(1,2,0).numpy()
     img_uint8 = (output_cpu * 255).astype('uint8')
+
+    # Apply CLAHE (Keep this subtle to maintain natural lighting)
+    img_lab = cv2.cvtColor(img_uint8, cv2.COLOR_RGB2LAB)
+    l, a, b = cv2.split(img_lab)
+    clahe = cv2.createCLAHE(clipLimit=1.5, tileGridSize=(8, 8))
+    l_enhanced = clahe.apply(l)
+    img_enhanced = cv2.merge((l_enhanced, a, b))
+    img_rgb = cv2.cvtColor(img_enhanced, cv2.COLOR_LAB2RGB)
+
+    # REFINED SHARPENING:
+    # Instead of ImageFilter.SHARPEN, use UnsharpMask with a smaller radius.
+    # Radius=1.0 keeps the sharpening effect localized to tiny edges (finer details).
+    # Percent=200 gives a stronger "pop" to those edges.
+    final_img = Image.fromarray(img_rgb).filter(ImageFilter.UnsharpMask(radius=1.0, percent=200, threshold=2))
 
     # Apply CLAHE (Soft version: clipLimit=1.5 is very subtle)
     img_lab = cv2.cvtColor(img_uint8, cv2.COLOR_RGB2LAB)
