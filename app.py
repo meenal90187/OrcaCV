@@ -3,11 +3,11 @@ import torch
 import numpy as np
 import gdown
 import os
-import cv2  # Ensure 'opencv-python-headless' is in your requirements.txt
-from PIL import Image, ImageFilter
+import cv2 
+from PIL import Image
 from model import UIR_PolyKernel
 
-# 1. Configuration
+# Configuration
 FILE_ID = '1ZYaHF9LSDH-GFt5W_aTeVPgLXhol_7pT' 
 MODEL_PATH = 'model_checkpoint.pth'
 
@@ -31,44 +31,35 @@ def get_model():
 
 model, device = get_model()
 
-# 2. UI Layout
+# UI Layout
 st.title("OrcaCV: Underwater Image Enhancement")
-st.markdown("---")
 uploaded_file = st.file_uploader("Upload an underwater image...", type=["jpg", "png"])
 
 if uploaded_file is not None:
-    # A. Pre-processing
     img = Image.open(uploaded_file).convert('RGB')
     display_img = img.copy()
     display_img.thumbnail((512, 512)) 
     
-    # B. Inference
+    # Inference
     input_tensor = torch.tensor(np.array(display_img)).permute(2,0,1).float().div(255).unsqueeze(0).to(device)
     with torch.no_grad():
         output = model(input_tensor)
     
-    # C. Post-processing Pipeline
-    # Convert back to numpy for OpenCV processing
+    # Post-processing: Pure Model Output + Soft Color Balancing
     output_cpu = torch.clamp(output.cpu(), 0, 1).squeeze(0).permute(1,2,0).numpy()
     img_uint8 = (output_cpu * 255).astype('uint8')
 
-    # Apply CLAHE (Contrast Limited Adaptive Histogram Equalization)
-    # This automatically balances the lighting, making the "sterile" look more natural
+    # Apply CLAHE (Soft version: clipLimit=1.5 is very subtle)
     img_lab = cv2.cvtColor(img_uint8, cv2.COLOR_RGB2LAB)
     l, a, b = cv2.split(img_lab)
-    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+    clahe = cv2.createCLAHE(clipLimit=1.5, tileGridSize=(8, 8))
     l_enhanced = clahe.apply(l)
     img_enhanced = cv2.merge((l_enhanced, a, b))
-    img_rgb = cv2.cvtColor(img_enhanced, cv2.COLOR_LAB2RGB)
-
-    # Apply Unsharp Masking for fine-grained edge clarity
-    final_img = Image.fromarray(img_rgb).filter(ImageFilter.UnsharpMask(radius=2, percent=150, threshold=3))
+    final_img_rgb = cv2.cvtColor(img_enhanced, cv2.COLOR_LAB2RGB)
     
-    # D. Display Results
+    # Display Results without any Sharpen filters
     col1, col2 = st.columns(2)
     with col1:
         st.image(display_img, caption="Original Input")
     with col2:
-        st.image(final_img, caption="OrcaCV Enhanced")
-
-    st.success("Enhancement Complete!")
+        st.image(final_img_rgb, caption="OrcaCV Natural Restoration")
