@@ -3,13 +3,12 @@ import torch
 import numpy as np
 import gdown
 import os
-import cv2
+import cv2  # This will now work because of step 1
 from PIL import Image, ImageOps, ImageFilter
-# Assuming your model architecture is defined in model.py in the same folder
 from model import UIR_PolyKernel
 
-# 1. Configuration: Replace with your actual Google Drive File ID
-FILE_ID = '1ZYaHF9LSDH-GFt5W_aTeVPgLXhol_7pT' 
+# Ensure FILE_ID is a string with quotes!
+FILE_ID = '1ZYaHF9LSDH-GFt5W_aTeVPgLXhol_7pT'
 MODEL_PATH = 'model_checkpoint.pth'
 
 @st.cache_resource
