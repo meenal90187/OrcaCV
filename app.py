@@ -11,7 +11,7 @@ from scipy.ndimage import median_filter
 @st.cache_resource
 def get_model():
     # Replace with your actual File ID
-    FILE_ID = 'YOUR_ACTUAL_GOOGLE_DRIVE_FILE_ID_HERE'
+    FILE_ID = 1ZYaHF9LSDH-GFt5W_aTeVPgLXhol_7pT
     output_path = 'model_checkpoint.pth'
     
     # Download if not already there
