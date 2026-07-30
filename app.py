@@ -3,6 +3,7 @@ import torch
 import numpy as np
 import gdown
 import os
+import cv2
 from PIL import Image, ImageFilter
 from model import UIR_PolyKernel
 
@@ -13,7 +14,7 @@ FILE_ID = '1ZYaHF9LSDH-GFt5W_aTeVPgLXhol_7pT'
 def get_model():
     output_path = 'model_checkpoint.pth'
     
-    # Download from Drive with simplified syntax to avoid TypeError
+    # Download from Drive
     if not os.path.exists(output_path):
         url = f'https://drive.google.com/uc?id={FILE_ID}'
         gdown.download(url, output_path, quiet=False)
@@ -44,29 +45,46 @@ model, device = get_model()
 
 # 2. UI Layout
 st.title("OrcaCV: Underwater Image Enhancement")
-uploaded_file = st.file_uploader("Upload an underwater image...", type=["jpg", "png"])
+# Added 'jpeg' to prevent upload crashes
+uploaded_file = st.file_uploader("Upload an underwater image...", type=["jpg", "png", "jpeg"])
 
 if uploaded_file is not None:
-    # Pre-processing
+    # Pre-processing: convert to RGB strips out problematic Alpha channels
     img = Image.open(uploaded_file).convert('RGB')
     display_img = img.copy()
     display_img.thumbnail((512, 512)) 
     
-    # Convert to Tensor
-    input_tensor = torch.tensor(np.array(display_img)).permute(2,0,1).float().div(255).unsqueeze(0).to(device)
+    # Convert to Tensor (Added astype(np.float32) for mathematical stability)
+    input_tensor = torch.tensor(np.array(display_img).astype(np.float32)).permute(2,0,1).div(255).unsqueeze(0).to(device)
     
     # Inference
     with torch.no_grad():
         output = model(input_tensor)
     
-    # Post-processing
+    # Post-processing Phase 1: Raw Output
     output_cpu = torch.clamp(output.cpu(), 0, 1).squeeze(0).permute(1,2,0).numpy()
-    enhanced_img = Image.fromarray((output_cpu * 255).astype('uint8'))
-    sharpened_img = enhanced_img.filter(ImageFilter.SHARPEN)
+    img_uint8 = (output_cpu * 255).astype('uint8')
+    
+    # Post-processing Phase 2: Natural CLAHE
+    img_lab = cv2.cvtColor(img_uint8, cv2.COLOR_RGB2LAB)
+    l, a, b = cv2.split(img_lab)
+    clahe = cv2.createCLAHE(clipLimit=1.5, tileGridSize=(8, 8)) # Reverted back to the natural 1.5 limit
+    l_enhanced = clahe.apply(l)
+    img_enhanced = cv2.merge((l_enhanced, a, b))
+    final_img_rgb = cv2.cvtColor(img_enhanced, cv2.COLOR_LAB2RGB)
+    
+    # Convert back to PIL
+    enhanced_pil = Image.fromarray(final_img_rgb)
+    
+    # Post-processing Phase 3: Precision Unsharp Masking
+    # Reverted percent to 200 and ensured threshold is 2 to prevent smooth water from becoming noisy
+    precision_sharpened_img = enhanced_pil.filter(ImageFilter.UnsharpMask(radius=1.0, percent=200, threshold=2))
     
     # Display Results
+    st.markdown("---")
     col1, col2 = st.columns(2)
     with col1:
         st.image(display_img, caption="Original Input")
     with col2:
-        st.image(sharpened_img, caption="OrcaCV Enhanced")
+        st.image(precision_sharpened_img, caption="OrcaCV Enhanced (Precision Profile)")
+    st.success("Enhancement Complete!")
