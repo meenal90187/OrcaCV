@@ -7,9 +7,41 @@ import cv2
 from PIL import Image, ImageFilter
 from model import UIR_PolyKernel
 
-# --- UI PRETTIFICATION ---
-# Set the page configuration for a clean, professional layout
+# --- UI PRETTIFICATION & CUSTOM CSS ---
+# Set the page configuration for a clean layout
 st.set_page_config(page_title="OrcaCV Restoration", page_icon="🌊", layout="centered")
+
+# Injecting custom CSS for a pretty background and prominent drag-and-drop zone
+st.markdown("""
+<style>
+/* Ocean-themed subtle gradient background */
+.stApp {
+    background: linear-gradient(135deg, #e0f2fe 0%, #a6c0fe 100%);
+}
+
+/* Clean, highly visible drag-and-drop file uploader */
+[data-testid="stFileUploadDropzone"] {
+    background-color: rgba(255, 255, 255, 0.8);
+    border: 2px dashed #4A90E2;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: background-color 0.3s ease;
+}
+[data-testid="stFileUploadDropzone"]:hover {
+    background-color: rgba(255, 255, 255, 1);
+    border-color: #2171C7;
+}
+
+/* Clean up the info box to match the aesthetic */
+div.stInfo {
+    background-color: rgba(255, 255, 255, 0.6);
+    border: 1px solid #a6c0fe;
+    border-radius: 10px;
+    color: #333333;
+}
+</style>
+""", unsafe_allow_html=True)
 
 # 1. Configuration
 FILE_ID = '1ZYaHF9LSDH-GFt5W_aTeVPgLXhol_7pT' 
@@ -51,14 +83,14 @@ model, device = get_model()
 st.title("🌊 OrcaCV: Marine Vision Restoration")
 
 # The "Banger Line" in tiny, stylized font
-st.markdown("<p style='font-size: 13px; color: #888888; font-style: italic; margin-top: -15px;'>* Computer vision and LLMs are not twins. Generative AI hallucinates fake pixels; we perform absolute mathematical restoration.</p>", unsafe_allow_html=True)
+st.markdown("<p style='font-size: 13px; color: #555555; font-style: italic; margin-top: -15px;'>* Computer vision and LLMs are not twins. Generative AI hallucinates fake pixels; we perform absolute mathematical restoration.</p>", unsafe_allow_html=True)
 
 # Short, punchy description defending your CV project vs Gen AI
 st.info("**About the Architecture:**\n\nUnlike modern Generative models that 'hallucinate' data to make an image look pretty, OrcaCV is a pure Computer Vision framework designed for strict structural fidelity. By utilizing the **UIR-PolyKernel** architecture and Hybrid Domain Attention (HDA), this model mathematically reverses real-world optical physics—such as wavelength-dependent attenuation and anisotropic light scattering. We do not generate fake marine textures; we recover the *actual* geometry hidden in the deep sea.")
 
 st.markdown("---")
 
-# File Uploader
+# Styled File Uploader
 uploaded_file = st.file_uploader("Upload a degraded underwater image...", type=["jpg", "png", "jpeg"])
 
 if uploaded_file is not None:
