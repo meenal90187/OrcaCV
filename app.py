@@ -14,47 +14,77 @@ st.markdown("""
 <style>
 /* Deep Ocean Gradient Background */
 .stApp {
-    background: linear-gradient(135deg, #0f172a 0%, #0369a1 50%, #0284c7 100%);
+    background: linear-gradient(135deg, #020617 0%, #0369a1 50%, #38bdf8 100%);
     background-attachment: fixed;
     color: #f8fafc;
 }
 
-/* Floating Little Orcas Background Effect via SVG Patterns */
+/* Floating Animated Little Orcas Background */
+@keyframes floatOrcas {
+    0% { transform: translateY(0px) translateX(0px) rotate(0deg); opacity: 0.15; }
+    50% { transform: translateY(-30px) translateX(20px) rotate(5deg); opacity: 0.35; }
+    100% { transform: translateY(0px) translateX(0px) rotate(0deg); opacity: 0.15; }
+}
+
 .stApp::before {
     content: "";
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800' width='100%25' height='100%25' opacity='0.08'%3E%3Cpath fill='%23ffffff' d='M100,200 Q120,180 140,200 Q130,220 100,200 Z'/%3E%3Cpath fill='%23ffffff' d='M600,500 Q620,480 640,500 Q630,520 600,500 Z'/%3E%3Cpath fill='%23ffffff' d='M300,700 Q320,680 340,700 Q330,720 300,700 Z'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800' width='100%25' height='100%25'%3E%3Cg fill='%23ffffff'%3E%3Cpath d='M150,150 Q170,130 190,150 Q180,170 150,150 Z M190,145 L210,135 L200,155 Z' opacity='0.4'/%3E%3Cpath d='M650,350 Q670,330 690,350 Q680,370 650,350 Z M690,345 L710,335 L700,355 Z' opacity='0.3'/%3E%3Cpath d='M250,650 Q270,630 290,650 Q280,670 250,650 Z M290,645 L310,635 L300,655 Z' opacity='0.5'/%3E%3Cpath d='M550,650 Q570,630 590,650 Q580,670 550,650 Z M590,645 L610,635 L600,655 Z' opacity='0.4'/%3E%3C/g%3E%3C/svg%3E");
+    animation: floatOrcas 12s ease-in-out infinite;
     pointer-events: none;
     z-index: 0;
 }
 
-/* Glassmorphism containers for text & components */
-div.stInfo, .css-1dp5vir {
-    background-color: rgba(15, 23, 42, 0.75) !important;
-    border: 1px solid rgba(56, 189, 248, 0.3);
-    border-radius: 12px;
-    backdrop-filter: blur(10px);
+/* Glassmorphism Containers */
+div.stInfo, .element-container {
+    position: relative;
+    z-index: 1;
+}
+
+div.stInfo {
+    background-color: rgba(15, 23, 42, 0.65) !important;
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    border-radius: 16px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
     color: #f1f5f9 !important;
 }
 
-/* Clean, highly visible drag-and-drop file uploader */
+/* Enhanced Drag-and-Drop Uploader */
 [data-testid="stFileUploadDropzone"] {
-    background-color: rgba(15, 23, 42, 0.6);
-    border: 2px dashed #38bdf8;
-    border-radius: 15px;
-    padding: 30px;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-    backdrop-filter: blur(4px);
-    transition: all 0.3s ease;
+    background-color: rgba(15, 23, 42, 0.5) !important;
+    border: 2px dashed #38bdf8 !important;
+    border-radius: 20px;
+    padding: 35px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(8px);
+    transition: all 0.3s ease-in-out;
 }
 [data-testid="stFileUploadDropzone"]:hover {
-    background-color: rgba(30, 41, 59, 0.8);
-    border-color: #7dd3fc;
+    background-color: rgba(30, 41, 59, 0.7) !important;
+    border-color: #7dd3fc !important;
+    box-shadow: 0 12px 40px rgba(56, 189, 248, 0.25);
 }
 
-/* Typography adjustments for dark theme contrast */
-h1, h2, h3, h4, p {
+/* Custom Buttons */
+.stButton>button {
+    background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 0.6rem 1.5rem;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4);
+    transition: all 0.3s ease;
+}
+.stButton>button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(56, 189, 248, 0.6);
+}
+
+/* Global Typography Colors */
+h1, h2, h3, h4, p, span {
     color: #f8fafc !important;
 }
 </style>
@@ -94,7 +124,7 @@ model, device = get_model()
 
 # 2. UI Layout & Typography
 st.title("🌊 OrcaCV: Marine Vision Restoration")
-st.markdown("<p style='font-size: 13px; color: #cbd5e1; font-style: italic; margin-top: -15px;'>* Computer vision and LLMs are not twins. Generative AI hallucinates fake pixels; we perform absolute mathematical restoration.</p>", unsafe_allow_html=True)
+st.markdown("<p style='font-size: 13px; color: #bae6fd; font-style: italic; margin-top: -15px;'>* Computer vision and LLMs are not twins. Generative AI hallucinates fake pixels; we perform absolute mathematical restoration.</p>", unsafe_allow_html=True)
 
 st.info("**About the Architecture:**\n\nUnlike modern Generative models that 'hallucinate' data to make an image look pretty, OrcaCV is a pure Computer Vision framework designed for strict structural fidelity. By utilizing the **UIR-PolyKernel** architecture and Hybrid Domain Attention (HDA), this model mathematically reverses real-world optical physics—such as wavelength-dependent attenuation and anisotropic light scattering.")
 
@@ -104,7 +134,6 @@ st.markdown("---")
 uploaded_file = st.file_uploader("Drop your degraded underwater image here...", type=["jpg", "png", "jpeg"])
 
 if uploaded_file is not None:
-    # Instant Preview before running heavy calculations
     img = Image.open(uploaded_file).convert('RGB')
     display_img = img.copy()
     display_img.thumbnail((512, 512)) 
@@ -112,7 +141,7 @@ if uploaded_file is not None:
     st.markdown("### 📷 Image Preview")
     st.image(display_img, caption="Uploaded Input Ready for Processing", width=400)
     
-    if st.button("✨ Run Mathematical Restoration", type="primary"):
+    if st.button("✨ Run Mathematical Restoration"):
         with st.spinner("Mathematically restoring optical physics..."):
             # Convert to Tensor
             input_tensor = torch.tensor(np.array(display_img).astype(np.float32)).permute(2,0,1).div(255).unsqueeze(0).to(device)
